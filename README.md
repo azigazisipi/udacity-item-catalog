@@ -8,8 +8,6 @@ Web application that provides a list of items within a variety of categories and
 
 2. Copy the folder content to the folder `catalog`
 
-3. 
-
 ## Usage
 
 Launch the Vagrant VM from inside the *vagrant* folder with:
