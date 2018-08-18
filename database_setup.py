@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -22,6 +22,7 @@ class Gameshop(Base):
     name = Column(String(250), nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
+    list_item = relationship('Game', cascade='all, delete-orphan')
 
     @property
     def serialize(self):
@@ -38,7 +39,7 @@ class Game(Base):
     name = Column(String(80), nullable=False)
     id = Column(Integer, primary_key=True)
     description = Column(String(250))
-    price = Column(String(8))
+    price = Column(Numeric(10,2))
     genre = Column(String(250))
     gameshop_id = Column(Integer, ForeignKey('gameshop.id'))
     gameshop = relationship(Gameshop)

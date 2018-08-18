@@ -1,5 +1,12 @@
-from flask import Flask, render_template, request, redirect
-from flask import jsonify, url_for, flash
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    jsonify,
+    url_for,
+    flash
+)
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Gameshop, Game, User
@@ -120,7 +127,11 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px;' \
+              'height: 300px;' \
+              'border-radius: 150px;' \
+              '-webkit-border-radius: 150px;' \
+              '-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
@@ -222,6 +233,14 @@ def newGameshop():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
+
+        # This part prevents to create empty posts. Resolved
+        # with 'required' html validator in 'newgameshop.html'
+
+        # if not request.form['name']:
+        #     flash('Add a name!')
+        #     return redirect(url_for('newGameshop'))
+
         newGameshop = Gameshop(name=request.form[
             'name'], user_id=login_session['user_id'])
         session.add(newGameshop)
@@ -236,12 +255,15 @@ def newGameshop():
 
 @app.route('/gameshop/<int:gameshop_id>/edit/', methods=['GET', 'POST'])
 def editGameshop(gameshop_id):
-    editedGameshop = session.query(
-        Gameshop).filter_by(id=gameshop_id).one()
     if 'username' not in login_session:
         return redirect('/login')
+    editedGameshop = session.query(
+        Gameshop).filter_by(id=gameshop_id).one()
     if editedGameshop.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to edit this gameshop. You can edit only your own gameshop!');}</script><body onload='myFunction()'>"
+        return "<script>function myFunction()" \
+               "{alert('You are not authorized to edit this gameshop." \
+               "You can edit only your own gameshop!');}" \
+               "</script><body onload='myFunction()'>"
     if request.method == 'POST':
         if request.form['name']:
             editedGameshop.name = request.form['name']
@@ -254,12 +276,15 @@ def editGameshop(gameshop_id):
 # Delete a gameshop
 @app.route('/gameshop/<int:gameshop_id>/delete/', methods=['GET', 'POST'])
 def deleteGameshop(gameshop_id):
-    gameshopToDelete = session.query(
-        Gameshop).filter_by(id=gameshop_id).one()
     if 'username' not in login_session:
         return redirect('/login')
+    gameshopToDelete = session.query(
+        Gameshop).filter_by(id=gameshop_id).one()
     if gameshopToDelete.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to delete this gameshop. You can delete only your own gameshop.');}</script><body onload='myFunction()'>"
+        return "<script>function myFunction()" \
+               "{alert('You are not authorized to delete this gameshop." \
+               "You can delete only your own gameshop.');}" \
+               "</script><body onload='myFunction()'>"
     if request.method == 'POST':
         session.delete(gameshopToDelete)
         flash('%s Successfully Deleted' % gameshopToDelete.name)
@@ -295,11 +320,33 @@ def newGame(gameshop_id):
         return redirect('/login')
     gameshop = session.query(Gameshop).filter_by(id=gameshop_id).one()
     if login_session['user_id'] != gameshop.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to add game to this gameshop. Youo can add games only your own gameshop!);}</script><body onload='myFunction()'>"
+        return "<script>function myFunction()" \
+               "{alert('You are not authorized to add game to this " \
+               "gameshop. You can add games only your own gameshop!);}" \
+               "</script><body onload='myFunction()'>"
     if request.method == 'POST':
-        newGame = Game(name=request.form['name'], description=request.form[
-            'description'], price=request.form['price'], genre=request.form[
-                'genre'], gameshop_id=gameshop_id, user_id=gameshop.user_id)
+
+        # This part prevents to create empty posts. Resolved
+        # with 'required' html validator in 'newgame.html'
+
+        # if not request.form['name']:
+        #     flash('Add a name!')
+        #     return render_template('newgame.html', gameshop_id=gameshop_id)
+        # if not request.form['description']:
+        #     flash('Add description!')
+        #     return render_template('newgame.html', gameshop_id=gameshop_id)
+        # if not request.form['price']:
+        #     flash('Add price!')
+        #     return render_template('newgame.html', gameshop_id=gameshop_id)
+
+        newGame = Game(
+                       name=request.form['name'],
+                       description=request.form['description'],
+                       price=request.form['price'],
+                       genre=request.form['genre'],
+                       gameshop_id=gameshop_id,
+                       user_id=gameshop.user_id
+                       )
         session.add(newGame)
         session.commit()
         flash('New Game %s Successfully Created' % (newGame.name))
@@ -318,7 +365,10 @@ def editGame(gameshop_id, game_id):
     editedGame = session.query(Game).filter_by(id=game_id).one()
     gameshop = session.query(Gameshop).filter_by(id=gameshop_id).one()
     if login_session['user_id'] != gameshop.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to edit a game. You can edit a game only in your own gameshop!');}</script><body onload='myFunction()'>"
+        return "<script>function myFunction()" \
+               "{alert('You are not authorized to edit a game." \
+               "You can edit a game only in your own gameshop!');}" \
+               "</script><body onload='myFunction()'>"
     if request.method == 'POST':
         if request.form['name']:
             editedGame.name = request.form['name']
@@ -349,7 +399,10 @@ def deleteGame(gameshop_id, game_id):
     gameshop = session.query(Gameshop).filter_by(id=gameshop_id).one()
     gameToDelete = session.query(Game).filter_by(id=game_id).one()
     if login_session['user_id'] != gameshop.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to delete this game. You can delete games only from your own gameshop!');}</script><body onload='myFunction()'>"
+        return "<script>function myFunction()" \
+               "{alert('You are not authorized to delete this game." \
+               "You can delete games only from your own gameshop!');}" \
+               "</script><body onload='myFunction()'>"
     if request.method == 'POST':
         session.delete(gameToDelete)
         session.commit()
